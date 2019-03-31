@@ -49,7 +49,7 @@ public class Table {
     }
     
     public void insertTable() throws SQLException, ClassNotFoundException{
-        Table_DAL.insertTable(this);
+        Table_DAL.insertTable();
     }
     
     public void deleteTable() throws SQLException, ClassNotFoundException{

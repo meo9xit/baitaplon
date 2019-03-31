@@ -33,6 +33,39 @@ public class Category {
         this.name = name;
     }
     
+    public Category(){}
+    
+    public Category(int id){
+        this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Category other = (Category) obj;
+        if (this.id != other.id) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + this.id;
+        return hash;
+    }
+
+
+    
     public static ArrayList<Category> getListCategory() throws SQLException, ClassNotFoundException{
         return Category_DAL.getListCategory();
     }

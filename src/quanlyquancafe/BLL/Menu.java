@@ -19,6 +19,16 @@ public class Menu {
     private int price;
     private int category;
 
+    public Menu(){}
+    
+    public Menu(int id){
+        this.id = id;
+    }
+    
+    public Menu(String name){
+        this.name = name;
+    }
+    
     public int getId() {
         return id;
     }
@@ -50,6 +60,34 @@ public class Menu {
     public void setCategory(int category) {
         this.category = category;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Menu other = (Menu) obj;
+        if (this.id != other.id) {
+            return false;
+        }
+        if (!this.name.equals(other.name))
+            return false;
+        return true;
+    }
+    
+    
     
     public static ArrayList<Menu> getListMenu() throws SQLException, ClassNotFoundException{
         return Menu_DAL.getListMenu();

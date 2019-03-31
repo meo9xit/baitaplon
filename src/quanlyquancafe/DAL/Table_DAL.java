@@ -22,7 +22,7 @@ public class Table_DAL {
          ArrayList<Table> arr = new ArrayList<Table>();
         Connection conn =  ConnUtils.getConnection();
         Statement cmd = conn.createStatement();
-        String sql = "select * from account";
+        String sql = "select * from ServeTable";
         ResultSet rs = cmd.executeQuery(sql);
         while(rs.next()){
             Table tb = new Table();
@@ -35,7 +35,7 @@ public class Table_DAL {
         conn.close();
         return arr;
     }
-    public static void insertTable(Table tb) throws SQLException, ClassNotFoundException{
+    public static void insertTable() throws SQLException, ClassNotFoundException{
         Connection conn = ConnUtils.getConnection();
         String sql = "{call USP_InsertTable()}";
         CallableStatement cmd = conn.prepareCall(sql);

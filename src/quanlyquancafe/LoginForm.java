@@ -48,6 +48,10 @@ public class LoginForm extends javax.swing.JFrame {
 
         jLabel2.setText("Mật khẩu:");
 
+        txtUserName.setText("HungHa");
+
+        txtPass.setText("123");
+
         btnLogin.setText("Đăng nhập");
         btnLogin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -117,7 +121,7 @@ public class LoginForm extends javax.swing.JFrame {
         if(acc.getPassword().equals(txtPass.getText()))
         {
             this.setVisible(false);
-            new MainForm(this,true).setVisible(true);   
+            new MainForm(this,true,acc).setVisible(true);   
             this.setVisible(true);
         }
     }//GEN-LAST:event_btnLoginActionPerformed
