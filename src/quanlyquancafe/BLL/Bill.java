@@ -22,7 +22,13 @@ public class Bill {
     private float discount;
     private float total;
 
-    public float getTotal(){
+    public float getTotal(ArrayList<BillInfo> arr, ArrayList<Menu> lmenu){
+        for(BillInfo bi:arr){
+            if(bi.getBillId()==this.id){
+                total = bi.getCount()*lmenu.get(lmenu.indexOf(new Menu(bi.getMenuId()))).getPrice();
+            }
+        }
+        total = total * (1-discount);
         return total;
     }
     
@@ -71,7 +77,7 @@ public class Bill {
         return Bill_DAL.getListBill();
     }
     
-    public void insertBill() throws SQLException, ClassNotFoundException{
+    public static void insertBill(int idTable) throws SQLException, ClassNotFoundException{
         Bill_DAL.insertBill(idTable);
     }
     

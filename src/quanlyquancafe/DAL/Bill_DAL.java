@@ -39,7 +39,7 @@ public class Bill_DAL {
     }
     public static void insertBill(int idTable) throws SQLException, ClassNotFoundException{
         Connection conn =  ConnUtils.getConnection();
-        String sql = "{call USP_InsertBill(?)";
+        String sql = "{call USP_InsertBill(?)}";
         CallableStatement cmd = conn.prepareCall(sql);
         cmd.setInt(1, idTable);
         cmd.execute();

@@ -7,11 +7,16 @@ package quanlyquancafe;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractListModel;
+import javax.swing.ComboBoxModel;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
@@ -39,7 +44,7 @@ public class MainForm extends javax.swing.JDialog {
             lblCurrentDate.setText(dateFormat.format(date));
         }
     };
-    Timer timer = new Timer(1000,taskperformer);
+    Timer timer = new Timer(100,taskperformer);
     Account acc = new Account();
     ArrayList<Menu> lMenu = new ArrayList<>();
     ArrayList<Table> lTable = new ArrayList<>();
@@ -129,15 +134,23 @@ public class MainForm extends javax.swing.JDialog {
         
     }
     
-    int getTotal(int index){
-        return lBillInfo.get(index).getCount()*lMenu.get(lMenu.indexOf(new Menu(lBillInfo.get(index).getMenuId()))).getPrice();
-    }
+
     
     class TableBill extends AbstractTableModel{
-        Bill bill = new Bill();
         ArrayList<BillInfo> billInfos = new ArrayList<>();
+        ArrayList<Menu> lMenu = new ArrayList<>();
         String[] name = {"Tên món","Số lượng","Đơn giá","Tổng"};
         Class[] classes = {String.class, Integer.class, Integer.class, Integer.class};
+        
+        
+        public TableBill(ArrayList<BillInfo> arr, ArrayList<Menu> lMenu){
+            this.billInfos = arr;
+            this.lMenu = lMenu;
+        }
+        
+        int getTotal(int index){
+            return billInfos.get(index).getCount()*lMenu.get(lMenu.indexOf(new Menu(billInfos.get(index).getMenuId()))).getPrice();
+        }
         
         @Override
         public int getRowCount() {
@@ -185,26 +198,54 @@ public class MainForm extends javax.swing.JDialog {
         
     }
     
-    void loadForm(){
-        loadData();
-        tableMenu.setModel(new TableMenu(lMenu));
-        tableTable.setModel(new TableTable(lTable));
-    }
-    
     void loadMenu(){
         for(Menu mn: lMenu){
             cbMenu.addItem(mn.getName());
         }
     }
     
+    void loadForm(){
+        loadData();
+        tableMenu.setModel(new TableMenu(lMenu));
+        tableTable.setModel(new TableTable(lTable));
+        loadMenu();
+    }
+    
+    
+    boolean showBill(int tableID){
+        ArrayList<BillInfo> arr = new ArrayList<>();
+        try{
+            arr = BillInfo.getListBillInfoByTableID(tableID);
+        }
+        catch(ClassNotFoundException | SQLException ex){
+            JOptionPane.showMessageDialog(new JFrame(), "Lỗi kết nối!");
+        }
+        if(arr == null)
+            return false;
+        else tableBill.setModel(new TableBill(arr,lMenu));
+        return true;
+    }
+    
+    Bill getUncheckedBillByTableID(int tableID){
+        Bill b = new Bill();
+
+        return b;
+    }
+    
+    
+    
+    
     public MainForm(java.awt.Frame parent, boolean modal, Account acc) {
         super(parent, modal);
         initComponents();
-        this.acc = acc;
-        loadForm();
-        loadMenu();
+        this.setTitle("Quản lý giao dịch quán cà phê (nhóm 8)");
         timer.setRepeats(true);
         timer.start();
+        this.acc = acc;
+        loadForm();
+        if(!acc.getType().equals("Quản lý"))
+            jMenu1.setEnabled(false);
+
     }
 
     /**
@@ -236,14 +277,15 @@ public class MainForm extends javax.swing.JDialog {
         jTextField3 = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         lblCurrentTable = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        btnCancel = new javax.swing.JButton();
         cbBookedTable = new javax.swing.JComboBox<>();
-        jButton2 = new javax.swing.JButton();
+        btnChange = new javax.swing.JButton();
         cbFreeTable = new javax.swing.JComboBox<>();
         btnPay = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -291,6 +333,11 @@ public class MainForm extends javax.swing.JDialog {
 
             }
         ));
+        tableTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tableTableMouseClicked(evt);
+            }
+        });
         jScrollPane2.setViewportView(tableTable);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -316,28 +363,60 @@ public class MainForm extends javax.swing.JDialog {
         ));
         jScrollPane3.setViewportView(tableBill);
 
+        cbMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbMenuActionPerformed(evt);
+            }
+        });
+
         jLabel1.setText("Món: ");
+
+        txtCount.setText("1");
 
         jLabel2.setText("Số lượng:");
 
         btnAddMenu.setText("Thêm");
+        btnAddMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddMenuActionPerformed(evt);
+            }
+        });
 
         btnDeleteMenu.setText("Hủy món");
+        btnDeleteMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteMenuActionPerformed(evt);
+            }
+        });
 
         jLabel3.setText("Giảm giá: ");
 
         jLabel4.setText("Thành tiền: ");
 
-        jButton1.setText("Hủy bàn");
+        btnCancel.setText("Hủy bàn");
 
-        jButton2.setText("Chuyển bàn");
+        btnChange.setText("Chuyển bàn");
 
         btnPay.setText("Thanh toán");
 
         jMenu1.setText("Admin");
+        jMenu1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jMenu1MouseClicked(evt);
+            }
+        });
         jMenuBar1.add(jMenu1);
 
         jMenu2.setText("Tài khoản");
+
+        jMenuItem1.setText("Đăng xuất");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem1);
+
         jMenuBar1.add(jMenu2);
 
         setJMenuBar(jMenuBar1);
@@ -357,8 +436,8 @@ public class MainForm extends javax.swing.JDialog {
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(28, 28, 28)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addComponent(btnChange, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(btnCancel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -407,10 +486,6 @@ public class MainForm extends javax.swing.JDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(51, 51, 51)
-                        .addComponent(lblCurrentTable)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(cbMenu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -421,13 +496,17 @@ public class MainForm extends javax.swing.JDialog {
                             .addComponent(txtCount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2)
                             .addComponent(btnDeleteMenu))
-                        .addGap(25, 25, 25)))
+                        .addGap(25, 25, 25))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(51, 51, 51)
+                        .addComponent(lblCurrentTable)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3)
-                    .addComponent(jButton1)
+                    .addComponent(btnCancel)
                     .addComponent(cbBookedTable, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -435,7 +514,7 @@ public class MainForm extends javax.swing.JDialog {
                         .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel4))
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jButton2)
+                        .addComponent(btnChange)
                         .addComponent(cbFreeTable, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnPay)
@@ -444,64 +523,226 @@ public class MainForm extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+        
 
+    
+    
+    
     private void tableMenuMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableMenuMouseClicked
         // TODO add your handling code here:
         int row = tableMenu.getSelectedRow();
         cbMenu.setSelectedIndex(row);
     }//GEN-LAST:event_tableMenuMouseClicked
 
+    private void tableTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableTableMouseClicked
+        // TODO add your handling code here:
+        int r = tableTable.getSelectedRow();
+        int id = lTable.get(r).getID();
+        showBill(id);
+    }//GEN-LAST:event_tableTableMouseClicked
+
+    void insertBillInfoToBill(Bill bill){
+           
+    }
+    
+    private void btnAddMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddMenuActionPerformed
+
+        int tableID = lTable.get(tableTable.getSelectedRow()).getID();
+        boolean flag = false;
+        for(Bill bill: lBill){
+            if(bill.isStatus()==false&&bill.getIdTable()==tableID){
+                showBill(tableID);
+                BillInfo bi = new BillInfo();
+                bi.setBillId(bill.getId());
+                bi.setMenuId(lMenu.get(cbMenu.getSelectedIndex()).getId());
+                try{
+                    int count = Integer.parseInt(txtCount.getText());
+                    if(count<=0)
+                        throw new Exception("Số lượng phải lớn hơn 0");
+                    bi.setCount(Integer.parseInt(txtCount.getText()));
+                }
+                catch(java.lang.NumberFormatException ex){
+                    JOptionPane.showMessageDialog(new JFrame(), "Sô lượng không được bỏ trống!");
+                    return;
+                } catch(Exception ex){
+                    JOptionPane.showMessageDialog(new JFrame(), ex.toString());
+                    return;
+                }
+                if(lBillInfo.contains(bi)){
+                    lBillInfo.get(lBillInfo.indexOf(bi)).setCount(lBillInfo.get(lBillInfo.indexOf(bi)).getCount()+bi.getCount());
+                    try {
+                        lBillInfo.get(lBillInfo.indexOf(bi)).updateBillInfo();
+                    } catch (SQLException ex) {
+                        Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                else{
+                  lBillInfo.add(bi);
+                  try {
+                    bi.insertBillInfo();
+                } catch (ClassNotFoundException ex) {
+                    //JOptionPane.showMessageDialog(new JFrame(), "Lỗi kết nối!");
+                } catch (SQLException ex) {    
+                   Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                }
+                
+                lTable.get(lTable.indexOf(new Table(tableID))).setStatus(true);
+                tableTable.setModel(new TableTable(lTable));
+                showBill(tableID);
+                flag = true;
+                break;
+            }
+
+        }
+        if(!flag){
+            try {
+                Bill.insertBill(tableID);
+                lBill = Bill.getListBill();
+            } catch (SQLException ex) {
+                 Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
+                 Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            Bill bill = lBill.get(lBill.size()-1);
+            BillInfo bi = new BillInfo();
+            bi.setBillId(bill.getId());
+            bi.setMenuId(lMenu.get(cbMenu.getSelectedIndex()).getId());
+            bi.setCount(Integer.parseInt(txtCount.getText()));
+            lBillInfo.add(bi);
+            try {
+                bi.insertBillInfo();
+            } catch (ClassNotFoundException ex) {
+                //JOptionPane.showMessageDialog(new JFrame(), "Lỗi kết nối!");
+            } catch (SQLException ex) {    
+               Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            lTable.get(lTable.indexOf(new Table(tableID))).setStatus(true);
+            tableTable.setModel(new TableTable(lTable));
+            showBill(tableID);
+        }
+        lTable.get(lTable.indexOf(new Table(tableID))).setStatus(true);
+        try {
+            lTable.get(lTable.indexOf(new Table(tableID))).updateTable();
+        } catch (SQLException ex) {
+            Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        tableTable.setModel(new TableTable(lTable));
+        int index = lTable.indexOf(new Table(tableID));
+        tableTable.setRowSelectionInterval(index, index);
+    }//GEN-LAST:event_btnAddMenuActionPerformed
+
+    private void jMenu1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jMenu1MouseClicked
+        // TODO add your handling code here:
+        new AdminForm(this, true, lMenu, lTable, lCategory, lBill, lBillInfo).setVisible(true);
+    }//GEN-LAST:event_jMenu1MouseClicked
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        // TODO add your handling code here:
+        this.dispatchEvent(new WindowEvent(this,WindowEvent.WINDOW_CLOSING));
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void cbMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbMenuActionPerformed
+        // TODO add your handling code here:
+        int r = cbMenu.getSelectedIndex();
+        tableMenu.setRowSelectionInterval(r, r);
+    }//GEN-LAST:event_cbMenuActionPerformed
+
+    private void btnDeleteMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteMenuActionPerformed
+        // TODO add your handling code here:
+        int r = tableBill.getSelectedRow();
+        if(r==-1){
+            JOptionPane.showMessageDialog(new JFrame(), "Phải chọn món muốn hủy trong bảng!");
+            return;
+        }
+        BillInfo bi = new BillInfo();
+        int selectedTable = tableTable.getSelectedRow();
+        bi.setBillId(getBillByTableID(lTable.get(selectedTable).getID()).getId());
+        bi.setMenuId(getMenuByName(tableBill.getValueAt(r, 0).toString()).getId());
+        bi.setCount(Integer.parseInt(tableBill.getValueAt(r, 1).toString()));
+        lBillInfo.remove(bi);
+        try {
+            bi.deleteBillInfo();
+        } catch (SQLException ex) {
+            Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        int tableID = lTable.get(tableTable.getSelectedRow()).getID();
+        showBill(tableID);
+    }//GEN-LAST:event_btnDeleteMenuActionPerformed
+    
+    Menu getMenuByName(String name){
+        for(Menu menu: lMenu){
+            if(menu.getName().equals(name)){
+                return menu;
+            }
+        }
+        return null;
+    }
+    
+    Bill getBillByTableID(int tableID){
+        for(Bill bill: lBill){
+            if(bill.getIdTable()==tableID)
+                return bill;
+        }
+        return null;
+    }
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the dialog */
-//        java.awt.EventQueue.invokeLater(new Runnable() {
-//            public void run() {
-//                MainForm dialog = new MainForm(new javax.swing.JFrame(), true, acc);
-//                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-//                    @Override
-//                    public void windowClosing(java.awt.event.WindowEvent e) {
-//                        System.exit(0);
-//                    }
-//                });
-//                dialog.setVisible(true);
+//    public static void main(String args[]) {
+//        /* Set the Nimbus look and feel */
+//        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+//        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+//         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+//         */
+//        try {
+//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+//                if ("Nimbus".equals(info.getName())) {
+//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//                    break;
+//                }
 //            }
-//        });
-    }
+//        } catch (ClassNotFoundException ex) {
+//            java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (InstantiationException ex) {
+//            java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (IllegalAccessException ex) {
+//            java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+//            java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        }
+//        //</editor-fold>
+//
+//        /* Create and display the dialog */
+////        java.awt.EventQueue.invokeLater(new Runnable() {
+////            public void run() {
+////                MainForm dialog = new MainForm(new javax.swing.JFrame(), true, acc);
+////                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+////                    @Override
+////                    public void windowClosing(java.awt.event.WindowEvent e) {
+////                        System.exit(0);
+////                    }
+////                });
+////                dialog.setVisible(true);
+////            }
+////        });
+//    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddMenu;
+    private javax.swing.JButton btnCancel;
+    private javax.swing.JButton btnChange;
     private javax.swing.JButton btnDeleteMenu;
     private javax.swing.JButton btnPay;
     private javax.swing.JComboBox<String> cbBookedTable;
     private javax.swing.JComboBox<String> cbFreeTable;
     private javax.swing.JComboBox<String> cbMenu;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -509,6 +750,7 @@ public class MainForm extends javax.swing.JDialog {
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

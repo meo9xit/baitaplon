@@ -5,11 +5,14 @@
  */
 package quanlyquancafe.DAL;
 
+import com.microsoft.sqlserver.jdbc.SQLServerException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import quanlyquancafe.BLL.Account;
 
 /**
@@ -24,9 +27,13 @@ public class Account_DAL {
         String sql = "Select * from Account where username = '"+username+"'";
         ResultSet rs = cmd.executeQuery(sql);
         rs.next();
+        try{
         acc.setUsername(username);
         acc.setPassword(rs.getString("pass"));
         acc.setType(rs.getString("type"));
+        } catch(Exception ex){
+            throw new ClassNotFoundException();
+        }
         cmd.close();
         conn.close();
         return acc;

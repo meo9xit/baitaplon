@@ -19,6 +19,12 @@ public class Table {
     private int ID;
     private String tableName;
     private boolean status;
+    
+    public Table(){}
+    
+    public Table(int id){
+        this.ID =  id;
+    }
 
     public String getTableName() {
         return tableName;
@@ -48,7 +54,7 @@ public class Table {
         return Table_DAL.getListTable();
     }
     
-    public void insertTable() throws SQLException, ClassNotFoundException{
+    public static void insertTable() throws SQLException, ClassNotFoundException{
         Table_DAL.insertTable();
     }
     
@@ -59,4 +65,30 @@ public class Table {
     public void updateTable() throws SQLException, ClassNotFoundException{
         Table_DAL.updateTable(this);
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Table other = (Table) obj;
+        if (this.ID != other.ID) {
+            return false;
+        }
+        return true;
+    }
+    
+    
 }

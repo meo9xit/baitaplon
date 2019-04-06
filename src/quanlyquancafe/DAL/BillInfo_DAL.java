@@ -37,7 +37,7 @@ public class BillInfo_DAL {
     }
     public static void insertBillInfor(BillInfo bi) throws SQLException, ClassNotFoundException{
         Connection conn = ConnUtils.getConnection();
-        String sql = "{call USP_InsertBillInfo(?,?,?)";
+        String sql = "{call USP_InsertBillInfo(?,?,?)}";
         CallableStatement cmd = conn.prepareCall(sql);
         cmd.setInt(1, bi.getBillId());
         cmd.setInt(2, bi.getMenuId());
@@ -63,5 +63,24 @@ public class BillInfo_DAL {
         int r = cmd.executeUpdate(sql);
         cmd.close();
         conn.close();
+    }
+    
+    public static ArrayList<BillInfo> getListBillInfoByTableID(int tableID) throws SQLException, ClassNotFoundException{
+        ArrayList<BillInfo> arr = new ArrayList<>();
+        Connection conn = ConnUtils.getConnection();
+        Statement cmd = conn.createStatement();
+        String sql = "Select billinfo.idbill, billinfo.idfood, billinfo.count from "
+                + "billinfo, bill where billinfo.idbill = bill.id and bill.status = 'false' and bill.idtable = "+tableID;
+        ResultSet rs = cmd.executeQuery(sql);
+        while(rs.next()){
+            BillInfo bi = new BillInfo();
+            bi.setBillId(rs.getInt("idBill"));
+            bi.setMenuId(rs.getInt("idFood"));
+            bi.setCount(rs.getInt("count"));
+            arr.add(bi);
+        }
+        cmd.close();
+        conn.close();
+        return arr;
     }
 }

@@ -57,4 +57,38 @@ public class BillInfo {
     public void updateBillInfo() throws SQLException, ClassNotFoundException{
         BillInfo_DAL.updateBillInfo(this);
     }
+    
+    public static ArrayList<BillInfo> getListBillInfoByTableID(int tableID) throws SQLException, ClassNotFoundException{
+        return BillInfo_DAL.getListBillInfoByTableID(tableID);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final BillInfo other = (BillInfo) obj;
+        if (this.billId != other.billId) {
+            return false;
+        }
+        if (this.menuId != other.menuId) {
+            return false;
+        }
+        return true;
+    }
+    
+    
+    
 }

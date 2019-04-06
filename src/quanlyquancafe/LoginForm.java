@@ -5,10 +5,13 @@
  */
 package quanlyquancafe;
 
+import com.microsoft.sqlserver.jdbc.SQLServerException;
 import java.awt.event.WindowEvent;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import quanlyquancafe.BLL.Account;
 import quanlyquancafe.DAL.Account_DAL;
 
@@ -116,13 +119,19 @@ public class LoginForm extends javax.swing.JFrame {
         } catch (SQLException ex) {
             Logger.getLogger(LoginForm.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(LoginForm.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(new JFrame(),"Tài khoản không tồn tại!");
+            return;
         }
+        
         if(acc.getPassword().equals(txtPass.getText()))
-        {
-            this.setVisible(false);
-            new MainForm(this,true,acc).setVisible(true);   
-            this.setVisible(true);
+            {
+                this.setVisible(false);
+                new MainForm(this,true,acc).setVisible(true);   
+                this.setVisible(true);
+            }
+
+        else{
+            JOptionPane.showMessageDialog(new JFrame(), "Mật khẩu không chính xác!");
         }
     }//GEN-LAST:event_btnLoginActionPerformed
 

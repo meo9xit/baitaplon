@@ -14,7 +14,7 @@ import java.sql.SQLException;
 public class ConnUtils {
     public static Connection getConnection() throws SQLException, ClassNotFoundException{
         String hostName = "localhost";
-        String sqlInstanceName = "LAPTOP-OSE4976C\\SQLEXPRESS";
+        String sqlInstanceName = ".\\SQLEXPRESS";
         String database = "Quanliquancafe";
         String username = "meo9xit";
         String password ="123";

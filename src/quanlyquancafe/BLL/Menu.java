@@ -82,7 +82,7 @@ public class Menu {
         if (this.id != other.id) {
             return false;
         }
-        if (!this.name.equals(other.name))
+        if (this.id != other.id)
             return false;
         return true;
     }
